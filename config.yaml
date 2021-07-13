@@ -1,0 +1,17 @@
+listen_address: ":80"
+management_address: ":8080"
+cache_list:
+  - source: "example.com"
+    ip: ""
+    separate_mobile: true
+    scheme: "https"
+    expired_time: 3600
+    nick_name: "test"
+    host: ["localhost", "127.0.0.1"]
+    cache_black_list: [
+#      "\/wp-admin\/.*",
+#      "\/wp-login\.php.*"
+    ]
+    type_black_list: [
+    ]
+    visit_black_list: []
