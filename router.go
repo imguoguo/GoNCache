@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/tls"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"
@@ -43,7 +45,19 @@ func forwardRouter(cacheList []CacheListModel) http.Handler {
 				// 无缓存请求并存储
 				// 参考自：https://blog.csdn.net/mengxinghuiku/article/details/65448600
 				// 有就懒得造轮子 =w=
-				transport :=  http.DefaultTransport
+
+				// 判断是否有自定义host，如果有就忽略证书验证
+				// https://stackoverflow.com/questions/12122159/how-to-do-a-https-request-with-bad-certificate
+				var transport http.RoundTripper
+				if cacheModel.IP != "" {
+					transport = &http.Transport{
+						TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+					}
+				} else {
+					transport = http.DefaultTransport
+				}
+
+
 				outReq := new(http.Request)
 				*outReq = *context.Request // 浅层复制
 
@@ -58,6 +72,17 @@ func forwardRouter(cacheList []CacheListModel) http.Handler {
 				outReq.URL.Host = cacheModel.Source
 				outReq.URL.Scheme = cacheModel.Scheme
 				outReq.Host = cacheModel.Source
+				// 不知道怎么自定义host，暂时先不写了
+				//if cacheModel.IP != "" {
+				//	//outReq.Host = cacheModel.IP
+				//	outReq.URL.Host = cacheModel.IP
+				//	//outReq.TLS.ServerName = cacheModel.Source
+				//	//outReq.Header.Set("Host", cacheModel.Source)
+				//} else {
+				//	//outReq.Host = cacheModel.Source
+				//	outReq.URL.Host = cacheModel.Source
+				//}
+				fmt.Println(outReq.Host)
 				response, err := transport.RoundTrip(outReq)
 				// 原因不明的EOF
 				// 解决方法：outReq.Host也要设置

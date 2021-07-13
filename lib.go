@@ -26,13 +26,13 @@ func saveCache(model CacheListModel, request *http.Request, response *http.Respo
 	// TODO 写入缓存
 
 	contentType := response.Header.Get("Content-Type")
-	if isStringContain(model.TypeBlackList, contentType) {
-		// 黑名单文件类型不缓存
-		return false, nil
-	}
 
-	if response.StatusCode != http.StatusOK {
-		// 非正常状态码不缓存
+
+	if response.StatusCode != http.StatusOK ||
+		contentType == "" ||
+		len(responseBody) == 0 ||
+		isStringContain(model.TypeBlackList, contentType){
+		// 非正常状态码不缓存，黑名单不缓存，文件类型为空不缓存
 		return false, nil
 	}
 
